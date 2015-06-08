@@ -35,7 +35,7 @@ checkout(Pool, Block, infinity) ->
     gen_server:call(Pool, {checkout, Block, infinity}, infinity);
 checkout(Pool, Block, Timeout) ->
     {MegaSecs, Secs, MicroSecs} = os:timestamp(),
-    Deadline = {MegaSecs, Secs + Timeout div 1000, MicroSecs + (Timeout rem 1000) * 1000},
+    Deadline = {MegaSecs, Secs, MicroSecs + Timeout},
     gen_server:call(Pool, {checkout, Block, Deadline}, Timeout).
 
 -spec checkin(Pool :: node(), Worker :: pid()) -> ok.
@@ -262,7 +262,7 @@ add_waiting(Pid, Deadline, Queue) ->
 past_deadline(infinity) ->
     false;
 past_deadline(Deadline) ->
-    timer:now_diff(os:timestamp(), Deadline) > 0.
+    timer:now_diff(os:timestamp(), Deadline) < 0.
 
 handle_checkin(Pid, State) ->
     #state{supervisor = Sup,
